@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "canvas_management": {
+      "type": "http",
+      "url": "https://gate.goticket.cn/api/mini/mcp"
+    }
+  }
+}

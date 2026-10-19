@@ -1,0 +1,20 @@
+{
+  "name": "goticket",
+  "interface": {
+    "displayName": "未来船票"
+  },
+  "plugins": [
+    {
+      "name": "canvas",
+      "source": {
+        "source": "local",
+        "path": "./plugins/canvas"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "canvas",
+  "version": "0.1.0",
+  "description": "连接未来船票画布管理 MCP：查项目和需求进度、提设计需求、生成图片。首次使用用 mark-system 小程序扫码授权。",
+  "author": {
+    "name": "未来船票",
+    "url": "https://b.goticket.cn"
+  },
+  "homepage": "https://b.goticket.cn",
+  "keywords": ["goticket", "canvas", "requirement", "design", "image-generation", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "未来船票画布",
+    "shortDescription": "查进度、提需求、生成图片",
+    "longDescription": "以你自己的 mark-system 账号连接画布管理 MCP：查看项目、我的任务和我发起的需求，按项目提交设计需求，以及用当前空间的积分生成图片。所有权限和前端一致；写操作会先给你确认。首次使用需要用 mark-system 小程序扫码授权。",
+    "developerName": "未来船票",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://b.goticket.cn",
+    "defaultPrompt": [
+      "看一下我在画布上待处理的需求任务",
+      "我发起的需求现在都到哪一步了？",
+      "在项目里提一个新的设计需求",
+      "用画布生成一张图片，先告诉我要扣多少积分"
+    ],
+    "brandColor": "#1E1B4B",
+    "composerIcon": "./assets/icon-small.png",
+    "logo": "./assets/icon.png"
+  }
+}
