@@ -21,6 +21,8 @@ description: 未来船票画布（mark-system）的总入口。用户提到画�
 2. `canvas_operation_contract` 传 `domain` 和 `action`，拿到完整参数 schema、示例和前置条件。
 3. 按 contract 组装参数再调用。
 
+管理类工具（上面五个，以及 `canvas_operation_contract`）在同一个会话里**一次只能跑一个**：一个调用返回后再发下一个，不要并行，否则会报"Another management request is active"。
+
 常用 action：
 
 | 想做的事 | 工具 | action |

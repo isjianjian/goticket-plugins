@@ -17,7 +17,9 @@ description: 查未来船票画布上的进度：我待处理的需求任务、�
 | 某一条需求的细节 | `canvas_requirement` 的 `get`，需要时加 `timeline`（经过了哪些步骤）和 `actions`（现在能做什么） |
 | 有没有新通知 | `canvas_requirement`，`action=notice_summary` |
 
-参数以 `canvas_operation_contract` 返回的为准，分页参数没给时用默认第一页。
+参数以 `canvas_operation_contract` 返回的为准。默认只查第一页、`pageSize=10`：需求记录很大，一页太多会撑满上下文。需要更多时再翻页。
+
+一次只调一个工具，等上一个返回再调下一个（同一会话的管理请求不能并行）。
 
 ## 怎么回答
 
