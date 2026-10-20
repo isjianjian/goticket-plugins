@@ -178,6 +178,7 @@ codebuddy plugin install canvas@goticket
 | 提需求 | `/canvas:new-requirement` | `canvas:new-requirement` | `new-requirement` | 在项目里提设计需求，确认后才创建 |
 | 生成图片 | `/canvas:image` | `canvas:image` | `image` | 选模型、报价，确认积分后再生成 |
 | 登录排障 | `/canvas:login-help` | `canvas:login-help` | `login-help` | 扫码后仍未登录、invalid_grant 等 |
+| 直接改画布 | `/canvas:live-edit` | — | — | 仅 Claude 桌面端：在内置浏览器里打开画布，直接加节点、写提示词、连线、生成，实时可见 |
 
 会改数据或扣积分的操作（创建、提交、分配、生图等），都会先把要做的事列给你，等你确认后才执行。
 
