@@ -8,9 +8,10 @@
   "plugins": [
     {
       "name": "canvas",
-      "source": "./plugins/canvas",
+      "source": "./",
       "description": "连接未来船票画布管理 MCP：查项目和需求进度、提设计需求、生成图片。",
-      "category": "productivity"
+      "category": "productivity",
+      "version": "0.2.0"
     }
   ]
 }

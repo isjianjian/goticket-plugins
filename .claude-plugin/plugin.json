@@ -1,12 +1,20 @@
 {
   "name": "canvas",
   "displayName": "未来船票画布",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "连接未来船票画布管理 MCP：查项目和需求进度、提设计需求、生成图片。首次使用用 mark-system 小程序扫码授权。",
   "author": {
     "name": "未来船票",
     "url": "https://b.goticket.cn"
   },
   "homepage": "https://b.goticket.cn",
-  "keywords": ["goticket", "canvas", "requirement", "design", "image-generation", "mcp"]
+  "keywords": [
+    "goticket",
+    "canvas",
+    "requirement",
+    "design",
+    "image-generation",
+    "mcp"
+  ],
+  "repository": "https://github.com/isjianjian/goticket-plugins"
 }
