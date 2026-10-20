@@ -1,13 +1,73 @@
 {
   "name": "canvas",
-  "version": "0.6.2",
-  "description": "连接未来船票画布管理 MCP：查项目和需求进度、提设计需求、生成图片。首次使用用 mark-system 小程序扫码授权。",
+  "version": "0.6.3",
+  "description": "Operate the Goticket canvas through the canvas_management MCP: query project and requirement progress, submit design requests, quote and generate images, and edit the canvas live in the built-in browser.",
   "author": {
     "name": "未来船票",
     "url": "https://b.goticket.cn"
   },
   "homepage": "https://b.goticket.cn",
   "repository": "https://github.com/isjianjian/goticket-plugins",
+  "agents": [
+    "./agents/canvas.md"
+  ],
+  "skills": [
+    "./skills/canvas",
+    "./skills/progress",
+    "./skills/new-requirement",
+    "./skills/image",
+    "./skills/live-edit",
+    "./skills/login-help"
+  ],
+  "expertType": "agent",
+  "agentName": "canvas",
+  "displayName": {
+    "zh": "未来船票画布",
+    "en": "Goticket Canvas"
+  },
+  "profession": {
+    "zh": "画布协作助手",
+    "en": "Canvas Assistant"
+  },
+  "displayDescription": {
+    "zh": "连接未来船票画布，查项目与需求进度、提设计需求、按积分报价生图，并在内置浏览器里实时编辑画布。",
+    "en": "Connect to the Goticket canvas to check project and requirement progress, submit design requests, quote credits before generating images, and edit the canvas live in the built-in browser."
+  },
+  "avatar": "avatars/canvas.png",
+  "categoryId": "01-ProductDesign",
+  "defaultInitPrompt": {
+    "zh": "我有什么待处理的需求？",
+    "en": "What requirement tasks are pending for me?"
+  },
+  "plugin": "canvas",
+  "tags": [
+    {
+      "zh": "画布协作",
+      "en": "Canvas Collaboration"
+    },
+    {
+      "zh": "需求进度",
+      "en": "Requirement Progress"
+    },
+    {
+      "zh": "AI 生图",
+      "en": "Image Generation"
+    }
+  ],
+  "quickPrompts": [
+    {
+      "zh": "我有什么待处理的需求？",
+      "en": "What requirement tasks are pending for me?"
+    },
+    {
+      "zh": "看看我的画布项目现在进展到哪了",
+      "en": "Show the current progress of my canvas projects"
+    },
+    {
+      "zh": "帮我提一个新的设计需求",
+      "en": "Help me create a new design request"
+    }
+  ],
   "dependencies": {
     "mcpServers": "./.mcp.json"
   },

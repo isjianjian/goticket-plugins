@@ -17,7 +17,7 @@
 | [Gemini CLI](#gemini-cli) | 扩展 | 是 | 按官方格式适配，待实测 |
 | [Antigravity](#antigravity) | 插件 | 是 | 按官方格式适配，待实测 |
 | [Kimi Code CLI](#kimi-code-cli) | 插件 | 是 | 按官方格式适配，待实测 |
-| [WorkBuddy（国际版、国内版）](#workbuddy) | 插件市场 | 是 | 国际版（WorkBuddy AI 5.8.4）已实测安装；国内版格式相同，待实测 |
+| [WorkBuddy（国际版、国内版）](#workbuddy) | 插件市场 | 是 | 国际版（WorkBuddy AI 5.8.4）已实测安装；专家形态的连接引导待实测 |
 | [Trae（国际版、国内版）](#trae) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 | [Windsurf](#windsurf) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 
@@ -113,11 +113,14 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 
 ### WorkBuddy
 
-国际版和国内版的插件格式相同。打开 WorkBuddy 的「插件」页，点「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。
+国际版和国内版的插件格式相同。这个插件在 WorkBuddy 里以**专家**形态提供：装上之后在「专家·技能·连接器」里能直接找到「未来船票画布」，召唤它对话就行，不用自己配 MCP。
 
-装完重开一个会话，第一次用画布时会弹出「未来船票画布」的连接引导卡，点**连接**会打开授权页，用 mark-system 小程序扫码确认即可。连好的 MCP 统一出现在**「专家·技能·连接器」→ 连接器 → 自定义连接器**里，之后不会再重复引导。
+1. 打开「插件」页 →「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。
+2. 回到「专家·技能·连接器」→「专家」，找到「未来船票画布（画布协作助手）」，点进去开始对话。
+3. 第一次对话会弹出「未来船票画布」的连接引导卡，点**连接**打开授权页，用 mark-system 小程序扫码确认。
+4. 连好的 MCP 统一出现在**连接器 → 自定义连接器**里，之后不会再重复引导。
 
-> WorkBuddy 要同时看到两样东西才会加载 MCP：`plugin.json` 里**内联**的 `mcpServers`（`dependencies.mcpServers` 指向 `.mcp.json` 只用于依赖引导，桌面端不认它来启动 MCP），以及每个 server 下的 `x-workbuddy.auth.type = "oauth"`。少了任一项，插件能装上但 MCP 不会出现。
+> 为什么做成专家形态：WorkBuddy 桌面端只对**专家会话**做 MCP 依赖引导——它读 `plugin.json` 里的 `dependencies.mcpServers`（这里指向 `.mcp.json`）和每个 server 的 `x-workbuddy.auth.type = "oauth"`，据此弹出连接卡并走 OAuth。纯技能型插件（只写 `mcpServers`、没有 `expertType`）能装上，但桌面端不会自动注册其中的 MCP。
 
 用 CodeBuddy Code 命令行的话：
 
@@ -215,7 +218,7 @@ Kimi Code CLI 在 `/plugins` 的已安装列表里更新或移除；WorkBuddy �
 
 ## 常见问题
 
-- **插件装上了，但连接器里没有 `canvas_management`**：插件包里没声明依赖（`plugin.json` 的 `dependencies.mcpServers`）或没带 `x-workbuddy.auth`，客户端就不会把 MCP 带出来。用 0.6.1 及以上的包；旧版本可以按上面「手动加 MCP」兜底，或在插件管理里更新一次。
+- **WorkBuddy 里插件装上了，但连接器里没有 `canvas_management`**：WorkBuddy 桌面端只对专家会话做 MCP 依赖引导，所以要用**专家**入口（「专家·技能·连接器」→「未来船票画布」）开始对话，才会弹连接卡。直接在普通对话里问画布是不会带出 MCP 的，可以按上面「手动加 MCP」兜底。
 - **之前手动加过 `canvas_management`**：装插件前先删掉手动加的那个（例如 `claude mcp remove canvas_management`、`codex mcp remove canvas_management`），否则会看到两套相同的工具。
 - **扫码后仍显示未登录、提示 invalid_grant**：多个客户端同时用同一份授权时容易出现。关掉其他客户端，清除 `canvas_management` 的授权后，只用一个客户端重新扫码。详见 `login-help` 技能。
 - **Claude Desktop / claude.ai 网页版**：暂不支持。服务端还没有放行 Claude 网页的回调地址。
@@ -235,6 +238,8 @@ gemini-extension.json  Gemini CLI 扩展清单
 plugin.json            Antigravity 插件清单
 mcp_config.json        Antigravity 的 MCP 配置
 .mcp.json              Claude Code、Codex、WorkBuddy 的 MCP 配置
+agents/                WorkBuddy 专家形态的 Agent 定义（canvas.md）
+avatars/               专家头像
 skills/                所有客户端共用的技能
 assets/                图标
 scripts/version.py     统一查看和修改版本号
