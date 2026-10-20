@@ -15,7 +15,7 @@
 | [Gemini CLI](#gemini-cli) | 扩展 | 是 | 按官方格式适配，待实测 |
 | [Antigravity](#antigravity) | 插件 | 是 | 按官方格式适配，待实测 |
 | [Kimi Code CLI](#kimi-code-cli) | 插件 | 是 | 按官方格式适配，待实测 |
-| [WorkBuddy（国际版、国内版）](#workbuddy) | 插件市场 | 是 | 按官方格式适配，待实测 |
+| [WorkBuddy（国际版、国内版）](#workbuddy) | 插件市场 | 是 | 国际版（WorkBuddy AI 5.8.4）已实测安装；国内版格式相同，待实测 |
 | [Trae（国际版、国内版）](#trae) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 | [Windsurf](#windsurf) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 
@@ -111,7 +111,9 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 
 ### WorkBuddy
 
-国际版和国内版的插件格式相同。在 WorkBuddy 的插件管理里添加插件市场，地址填 `https://github.com/isjianjian/goticket-plugins`，再安装市场里的 `canvas`。用命令行的话：
+国际版和国内版的插件格式相同。打开 WorkBuddy 的「插件」页，点「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。第一次用画布时，按提示给 `canvas_management` 授权，会打开扫码页。
+
+用 CodeBuddy Code 命令行的话：
 
 ```bash
 codebuddy plugin marketplace add isjianjian/goticket-plugins
