@@ -120,7 +120,9 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 3. 第一次对话会弹出「未来船票画布」的连接引导卡，点**连接**打开授权页，用 mark-system 小程序扫码确认。
 4. 连好的 MCP 统一出现在**连接器 → 自定义连接器**里，之后不会再重复引导。
 
-> 为什么做成专家形态：WorkBuddy 桌面端只对**专家会话**做 MCP 依赖引导——它读 `plugin.json` 里的 `dependencies.mcpServers`（这里指向 `.mcp.json`）和每个 server 的 `x-workbuddy.auth.type = "oauth"`，据此弹出连接卡并走 OAuth。纯技能型插件（只写 `mcpServers`、没有 `expertType`）能装上，但桌面端不会自动注册其中的 MCP。
+> 为什么做成专家形态：WorkBuddy 桌面端只对**专家会话**解析 MCP 依赖——它读专家清单里的 `mcpServers` 和每个 server 的 `x-workbuddy.auth.type = "oauth"`，据此弹出连接卡并走 OAuth。纯技能型插件（只有 `skills`、没有 `expertType`）能装上，但桌面端不会注册其中的 MCP，也不给授权入口。
+
+如果插件市场那条路在你的版本上没有把专家列出来，用**导入专家包**这条更直接的路：下载 [canvas.zip](https://github.com/isjianjian/goticket-plugins/raw/main/dist/canvas.zip)，在「专家·技能·连接器」→「我的专家」→ 导入（从本地文件选这个 zip），导入后召唤「未来船票画布」对话，一样会弹连接卡。`dist/canvas.zip` 就是本仓库打出来的专家包，改完内容后用 WorkBuddy 专家打包脚本（`package_expert.py`）重新打一次即可。
 
 用 CodeBuddy Code 命令行的话：
 
@@ -242,6 +244,7 @@ agents/                WorkBuddy 专家形态的 Agent 定义（canvas.md）
 avatars/               专家头像
 skills/                所有客户端共用的技能
 assets/                图标
+dist/canvas.zip        WorkBuddy 专家包（导入「我的专家」用）
 scripts/version.py     统一查看和修改版本号
 ```
 
