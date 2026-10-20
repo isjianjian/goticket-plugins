@@ -15,14 +15,14 @@ description: 在 Claude 桌面端的内置浏览器里打开未来船票画布�
 
 1. 确定画布 ID：用户给的，或用 `canvas_project` 查（见 `canvas` 技能）。不知道也可以先打开再用 `listProjects` 查。
 2. 用 `preview_start` 打开 `https://b.goticket.cn/#/infinite-canvas/index?projectId=<画布ID>`（不带 `projectId` 会打开上次的画布）。
-3. 地址变成 `#/login` 说明没登录：先用 `tabs_context` 确认浏览器面板是显示状态，再请用户在面板里用微信扫码，然后执行下面这段等登录完成（最多等 100 秒，没等到就再问用户）：
+3. 地址变成 `#/login` 说明没登录：先用 `tabs_context` 确认浏览器面板是显示状态，再请用户在面板里用微信扫码，然后执行下面这段等登录完成（每次最多等 40 秒；没等到就再执行一次，等了两三轮还没登录就再问用户）：
 
    ```js
    await new Promise((resolve) => {
      const started = Date.now();
      const t = setInterval(() => {
        if (!location.hash.startsWith('#/login')) { clearInterval(t); resolve({ loggedIn: true, url: location.href }); }
-       else if (Date.now() - started > 100000) { clearInterval(t); resolve({ loggedIn: false }); }
+       else if (Date.now() - started > 40000) { clearInterval(t); resolve({ loggedIn: false }); }
      }, 1000);
    })
    ```
@@ -52,7 +52,7 @@ description: 在 Claude 桌面端的内置浏览器里打开未来船票画布�
 
 ## 2. 怎么调
 
-`javascript_tool` 支持顶层 `await`，最后一个表达式就是返回值。每次调用都这样开头：
+`javascript_tool` 支持顶层 `await`，最后一个表达式就是返回值；单次调用最多跑约 45 秒，超时会报错，所以所有等待都用 `timeoutMs: 30000` 分段等。每次调用都这样开头：
 
 ```js
 const b = window.__canvasAgentBridge__;
@@ -133,7 +133,7 @@ const g = await b.exec({ action: 'getGraph' });
 1. 读页面当前空间（积分从这里扣）：`JSON.parse(localStorage.getItem('mark_current_space') || 'null')`，得到 `spaceType`、`spaceId`、`name`。
 2. 用 MCP 报价，一次只调一个工具：`canvas_list_spaces`（同时初始化会话）→ 当前空间不同就 `canvas_switch_space` 切到同一个 → `canvas_image_quote`（`model_code` 用节点的 `model`，`image_size` 用 `imageSize`，有档位再带 `quality`）。报价是单张价格，要乘以 `count`。
 3. 告诉用户"将从「空间名」扣 N 积分，生成 X 张"，等明确同意。
-4. `generateNode`（`target`），然后用 `waitForGeneration`（`target`、`timeoutMs: 60000`）分段等。超时不会报错，而是返回当前状态；`completed` 为真之前接着等。完成后用 `getNode` 取 `data.url`，有 `data.error` 就如实告诉用户。
+4. `generateNode`（`target`），然后用 `waitForGeneration`（`target`、`timeoutMs: 30000`）分段等。超时不会报错，而是返回当前状态；`completed` 为真之前接着等。完成后用 `getNode` 取 `data.url`，有 `data.error` 就如实告诉用户。
 
 ## 5. 局部重绘（只改图里的一部分）
 
@@ -196,14 +196,16 @@ const g = await b.exec({ action: 'getGraph' });
    // 裁出的图先是页面本地图片（很大的 data: 地址），上传完才变成网址；只返回网址
    const cropUrl = async () => { const r = ((await b.exec({ action: 'getNode', target: child })).data.referenceImages || [])[0]; return typeof r === 'string' ? r : r?.url || ''; };
    let crop = await cropUrl();
-   for (let i = 0; i < 30 && !/^https?:/.test(crop); i++) { await new Promise((r) => setTimeout(r, 1000)); crop = await cropUrl(); }
+   for (let i = 0; i < 15 && !/^https?:/.test(crop); i++) { await new Promise((r) => setTimeout(r, 1000)); crop = await cropUrl(); }
    ({ child, crop: /^https?:/.test(crop) ? crop : '裁图还没上传完，稍后用 getNode 再看', prompt })
    ```
 
 4. **检查裁剪**：返回的 `crop` 是裁出来的那块图（`{{ref:0}}`）的网址，下载用 Read 看一眼，确认目标完整在里面、周围留了一点余量。不对就删掉这个子节点（它是你建的），调整 `BOX` 重来。这一步不扣积分。
 5. **报价并确认**：按第 4 节报价，模型固定 `image_pro`、尺寸 `2K`，告诉用户从哪个空间扣多少积分，等同意。
-6. **生成**：记下原图当前的 `data.url`，对子节点 `generateNode`，再用 `waitForGeneration`（子节点、`timeoutMs: 60000`）分段等完成。完成后画布会自动把结果贴回原图，用 `waitForNodeOutputPersisted`（`target` 是原图，`previousUrl` 是刚才记下的地址，`timeoutMs: 60000`）确认原图已更新，再 `focusViewport` 给用户看。
+6. **生成**：记下原图当前的 `data.url`，对子节点 `generateNode`，再用 `waitForGeneration`（子节点、`timeoutMs: 30000`）分段等完成。完成后画布会自动把结果贴回原图，用 `waitForNodeOutputPersisted`（`target` 是原图，`previousUrl` 是刚才记下的地址，`timeoutMs: 30000`）确认原图已更新，再 `focusViewport` 给用户看。
 7. **不满意**：改子节点的提示词后，对同一个子节点再 `generateNode`，不要重新建子节点。
+
+生成前子节点的 `data.url` 就是裁图本身，不代表已经生成过；以 `waitForGeneration` 返回的 `status: 'succeeded'` 为准。
 
 注意：
 
