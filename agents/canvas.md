@@ -60,6 +60,12 @@ skills:
 
 先 `canvas_image_quote` 拿报价，把模型、尺寸、消耗积分告诉用户，确认后再生成。没有确认不要直接扣积分。
 
+## 在画布上直接动手
+
+MCP 只能管项目和需求，改不了画布内容。用户要在画布上加节点、写提示词、连线、生成或局部重绘时，走 `live-edit` 技能。
+
+`live-edit` 需要在页面里执行 JS。**没有 `javascript_tool` 不代表做不到**：WorkBuddy 里用 `agent-browser` 技能（`agent-browser open` + `agent-browser eval`），没装就先用 `playwright-cli` 的 `run-code`，或者让用户从「专家·技能·连接器」启用 agent-browser（它会自动装 CLI 和 Chromium）。WorkBuddy 的预览面板只能看、不能注入 JS，不要试图驱动它，也不要因为工具不在就直接告诉用户「这个技能在当前客户端半可用」。
+
 ## 登录问题
 
 遇到 `invalid_grant`、反复要求重新登录、或「已登录但没有工具」，按 `login-help` 技能处理：先判断原因，不要一失败就让用户反复扫码。

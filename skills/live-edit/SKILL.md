@@ -1,21 +1,36 @@
 ---
 name: live-edit
-description: 在 Claude 桌面端的内置浏览器里打开未来船票画布，直接在画布上加节点、写文案和提示词、连线、分组、贴便签、生成图片、局部重绘（只改图里的一部分），用户在浏览器面板里实时看到。用户说"打开画布""在画布上做/加/排…""直接在画布里改""把图里的…换成/改成…"时使用。需要能在网页里执行 JavaScript 的浏览器工具（Claude 桌面端内置浏览器，或 Claude in Chrome）。
+description: 在浏览器里打开未来船票画布，直接在画布上加节点、写文案和提示词、连线、分组、贴便签、生成图片、局部重绘（只改图里的一部分），用户在画布上实时看到。用户说"打开画布""在画布上做/加/排…""直接在画布里改""把图里的…换成/改成…"时使用。需要能在网页里执行 JavaScript 的浏览器工具：Claude 桌面端用内置浏览器（preview_start + javascript_tool），WorkBuddy / CodeBuddy 用 agent-browser 技能（agent-browser eval）或 playwright-cli 技能（run-code）。
 ---
 
-# 在内置浏览器里直接操作画布
+# 在浏览器里直接操作画布
 
 画布页面自带一个给 Agent 用的接口 `window.__canvasAgentBridge__`。在浏览器里打开画布后，用浏览器工具执行 JS 调它，效果和用户亲手操作一样：实时同步给协作者，并自动保存。
 
-**前提**：要有能在网页里执行 JS 的浏览器工具。Claude 桌面端用内置浏览器（`preview_start`、`navigate`、`javascript_tool`、`tabs_context`、`computer`），也可以用 Claude in Chrome。都没有时告诉用户这个技能需要 Claude 桌面端，其余需求交给 `canvas`、`progress`、`new-requirement`、`image` 技能（它们走 MCP，不能改画布内容）。
+## 0. 先选执行通道
 
-操作身份是内置浏览器里登录的账号，不是 MCP 的授权；协作者会实时看到你的每一步。
+`window.__canvasAgentBridge__` 只有执行 JS 才碰得到。按客户端选通道：
+
+| 客户端 | 通道 | 打开页面 | 执行 JS |
+| --- | --- | --- | --- |
+| Claude 桌面端 | 内置浏览器 | `preview_start` / `navigate` | `javascript_tool` |
+| Claude in Chrome | 浏览器扩展 | 直接用当前标签页 | `javascript_tool` |
+| WorkBuddy / CodeBuddy | `agent-browser` 技能 | `agent-browser open <url>` | `agent-browser eval` |
+| WorkBuddy / CodeBuddy（没装 agent-browser） | `playwright-cli` 技能 | `playwright-cli goto <url>` | `playwright-cli run-code` |
+
+**不要因为当前客户端没有 `javascript_tool` 就判定技能不可用**，也不要改成"我写个脚本另开一个浏览器窗口，你能看到，只是不在对话面板里"再让用户降级接受 —— 那是把工具缺失说成了能力边界。WorkBuddy 里 `agent-browser` 和 `playwright-cli` 都是官方技能，能做的事和 Claude 桌面端一样。
+
+WorkBuddy 的「预览面板」（`present_files` 打开网页的那个）确实只能看、不能注入 JS，App 也没开 CDP 端口，所以不要试图驱动它。用 `agent-browser` 起独立 Chromium 窗口即可：画布协作走服务端，用户在任意设备的画布页上都看得到改动实时出现。
+
+`agent-browser` 没装时先装：让用户从「专家·技能·连接器」启用 **agent-browser** 技能（它加载时会自动装 CLI 和 Chromium），或手动 `npm install -g agent-browser && agent-browser install`。装完 `agent-browser --version` 能出版本号才算好。
+
+操作身份是这个浏览器里登录的账号，不是 MCP 的授权；协作者会实时看到你的每一步。
 
 ## 1. 打开画布
 
 1. **确定画布 ID**：用户给的，或用 `canvas_project` 查（见 `canvas` 技能）。不指定就打开上次的画布。
 2. **拿一次性登录链接**：调 MCP 工具 `canvas_browser_link`（`project_id` 填画布 ID）。打开这个链接会直接以当前用户登录并进入画布，不用扫码，也会沿用 MCP 的当前空间。链接 2 分钟内有效、只能用一次，等同登录凭证：**直接在浏览器里打开，不要贴到回复里，也不要写进文件或发给别人**。
-3. **在内置浏览器打开**：用 `preview_start` 打开链接（已有画布标签页就用 `navigate`，页面会自动刷新一次来完成登录）。
+3. **打开链接**：Claude 桌面端用 `preview_start`（已有画布标签页就用 `navigate`）；WorkBuddy 用 `agent-browser open "<链接>"`。页面会自动刷新一次来完成登录。
 4. **等画布就绪**：执行这一行，它会等到登录完成、画布加载好、协作连上，最多 40 秒：
 
    ```js
@@ -23,14 +38,14 @@ description: 在 Claude 桌面端的内置浏览器里打开未来船票画布�
    ```
 
    - 返回 `ready: true` 就可以开始操作。
-   - `needLogin: true`：链接过期或已用过。重新调 `canvas_browser_link` 再打开；MCP 不可用时，先用 `tabs_context` 确认浏览器面板在显示，再请用户在面板里用微信扫码，然后再执行这一行。
+   - `needLogin: true`：链接过期或已用过。重新调 `canvas_browser_link` 再打开；MCP 不可用时，先确认浏览器窗口还停在画布页（Claude 用 `tabs_context`，WorkBuddy 用 `agent-browser snapshot`），再请用户在那个窗口里用微信扫码，然后再执行这一行。
    - `timedOut: true`：再执行一次；还不行就看返回里的 `lastError`。
    - 提示"页面跳转，脚本被中断"：那是登录后的自动刷新，再执行一次即可。
 5. **换画布**：已经在画布页时，同样执行 `openCanvas({ projectId: '新ID' })`，它会负责切换和等待。
 
 ## 2. 怎么调
 
-`javascript_tool` 支持顶层 `await`，最后一个表达式就是返回值；单次调用最多跑约 45 秒，超时会报错，所以所有等待都用 `timeoutMs: 30000` 分段等。每次调用都这样开头：
+**Claude 桌面端**：`javascript_tool` 支持顶层 `await`，最后一个表达式就是返回值；单次调用最多跑约 45 秒，超时会报错，所以所有等待都用 `timeoutMs: 30000` 分段等。每次调用都这样开头：
 
 ```js
 const b = window.__canvasAgentBridge__;
@@ -38,7 +53,45 @@ const p = await b.exec({ action: 'ping' });
 if (p.projectId !== '342') throw new Error('浏览器里的画布已经换成 ' + p.projectId);
 ```
 
-用户可能在面板里自己切过画布，所以**每次写操作前都核对 `projectId`**。
+**WorkBuddy**：用 `agent-browser eval`。JS 里有中文和多层引号，直接写在命令行会被 shell 吃掉，统一走 base64：
+
+```bash
+JS='（把下面的 JS 原样放这里）'
+agent-browser eval -b "$(printf '%s' "$JS" | base64 | tr -d '\n')"
+```
+
+`eval` 会不会等 Promise 没有文档保证，所以**不要写裸 `await`**，用"先落结果、再回读"两段式，任何实现都跑得通：
+
+```js
+// 第一段：发起，结果写进 window.__canvasOut，最后一行立刻返回
+window.__canvasOut = { done: false };
+(async () => {
+  const b = window.__canvasAgentBridge__;
+  try { window.__canvasOut = { done: true, value: await b.exec({ action: 'ping' }) }; }
+  catch (e) { window.__canvasOut = { done: true, error: String((e && e.message) || e) }; }
+})();
+'started'
+```
+
+```js
+// 第二段：回读，没 done 就隔一两秒再来一次
+JSON.stringify(window.__canvasOut)
+```
+
+`agent-browser` 是持久守护进程，`open` 之后每条 `eval` 都在同一个页面里跑，登录态、画布状态、`__canvasOut` 都在，所以整场只 `open` 一次、结束 `close` 一次。**不要每步都重新 open**，否则登录链接会被浪费掉（只能用一次）。
+
+`playwright-cli run-code` 原生支持 async，可以一步到位：
+
+```bash
+playwright-cli run-code "async page => await page.evaluate(async () => {
+  const b = window.__canvasAgentBridge__;
+  const p = await b.exec({ action: 'ping' });
+  if (p.projectId !== '342') throw new Error('浏览器里的画布已经换成 ' + p.projectId);
+  return p;
+})"
+```
+
+用户可能在浏览器里自己切过画布，所以**每次写操作前都核对 `projectId`**。
 
 写操作用下面的写法：每一步单独捕获错误，一步失败不会丢掉前面的结果，返回值也只留 ID：
 
@@ -162,4 +215,4 @@ await b.exec({ action: 'getGraphBrief' })
 - 按用户的要求一次说清要做什么（例如"在画布 342 上加 2 个文字节点和 1 个图片节点并连线"），用户同意后直接做完，不用每一步都问。
 - **以下每次都要单独确认**：删除节点、连线或便签；改动不是这次新建的节点；生成图片和局部重绘（扣积分）；新建或切换画布。
 - 删除前先说明要删哪些（标题或内容摘要）。一次要删很多节点时分几次删，服务端的删除保护拦下来就停下告诉用户，不要设法绕过。
-- 做完用 `zoomToFit` 或 `focusViewport` 让用户在面板里看到结果，再用标题和内容总结改了什么。改过已有节点的，说明原来的内容，用户要还原时按原值改回。
+- 做完用 `zoomToFit` 或 `focusViewport` 让用户在画布上看到结果，再用标题和内容总结改了什么。改过已有节点的，说明原来的内容，用户要还原时按原值改回。
