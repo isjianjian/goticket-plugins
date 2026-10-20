@@ -2,7 +2,21 @@
   "mcpServers": {
     "canvas_management": {
       "type": "http",
-      "url": "https://gate.goticket.cn/api/mini/mcp"
+      "url": "https://gate.goticket.cn/api/mini/mcp",
+      "x-workbuddy": {
+        "displayName": {
+          "zh": "未来船票画布",
+          "en": "Goticket Canvas"
+        },
+        "description": {
+          "zh": "连接后可查项目和需求进度、提设计需求、生成图片。首次连接用 mark-system 小程序扫码授权。",
+          "en": "Query project and requirement progress, submit design requests and generate images after connecting. Scan with the mark-system mini program to authorize on first use."
+        },
+        "icon": "./assets/icon.png",
+        "auth": {
+          "type": "oauth"
+        }
+      }
     }
   }
 }

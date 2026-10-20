@@ -113,7 +113,11 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 
 ### WorkBuddy
 
-国际版和国内版的插件格式相同。打开 WorkBuddy 的「插件」页，点「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。第一次用画布时，按提示给 `canvas_management` 授权，会打开扫码页。
+国际版和国内版的插件格式相同。打开 WorkBuddy 的「插件」页，点「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。
+
+装完重开一个会话，第一次用画布时会弹出「未来船票画布」的连接引导卡，点**连接**会打开授权页，用 mark-system 小程序扫码确认即可。连好的 MCP 统一出现在**「专家·技能·连接器」→ 连接器 → 自定义连接器**里，之后不会再重复引导。
+
+> 插件包通过 `plugin.json` 的 `dependencies.mcpServers` 声明依赖，`.mcp.json` 里用 `x-workbuddy.auth.type = "oauth"` 告诉客户端这是扫码授权——少了这两项，WorkBuddy 会装上插件但不会带出 MCP。
 
 用 CodeBuddy Code 命令行的话：
 
@@ -211,6 +215,7 @@ Kimi Code CLI 在 `/plugins` 的已安装列表里更新或移除；WorkBuddy �
 
 ## 常见问题
 
+- **插件装上了，但连接器里没有 `canvas_management`**：插件包里没声明依赖（`plugin.json` 的 `dependencies.mcpServers`）或没带 `x-workbuddy.auth`，客户端就不会把 MCP 带出来。用 0.6.1 及以上的包；旧版本可以按上面「手动加 MCP」兜底，或在插件管理里更新一次。
 - **之前手动加过 `canvas_management`**：装插件前先删掉手动加的那个（例如 `claude mcp remove canvas_management`、`codex mcp remove canvas_management`），否则会看到两套相同的工具。
 - **扫码后仍显示未登录、提示 invalid_grant**：多个客户端同时用同一份授权时容易出现。关掉其他客户端，清除 `canvas_management` 的授权后，只用一个客户端重新扫码。详见 `login-help` 技能。
 - **Claude Desktop / claude.ai 网页版**：暂不支持。服务端还没有放行 Claude 网页的回调地址。
