@@ -13,42 +13,19 @@ description: 在 Claude 桌面端的内置浏览器里打开未来船票画布�
 
 ## 1. 打开画布
 
-1. 确定画布 ID：用户给的，或用 `canvas_project` 查（见 `canvas` 技能）。不知道也可以先打开再用 `listProjects` 查。
-2. 用 `preview_start` 打开 `https://b.goticket.cn/#/infinite-canvas/index?projectId=<画布ID>`（不带 `projectId` 会打开上次的画布）。
-3. 地址变成 `#/login` 说明没登录：先用 `tabs_context` 确认浏览器面板是显示状态，再请用户在面板里用微信扫码，然后执行下面这段等登录完成（每次最多等 40 秒；没等到就再执行一次，等了两三轮还没登录就再问用户）：
+1. **确定画布 ID**：用户给的，或用 `canvas_project` 查（见 `canvas` 技能）。不指定就打开上次的画布。
+2. **拿一次性登录链接**：调 MCP 工具 `canvas_browser_link`（`project_id` 填画布 ID）。打开这个链接会直接以当前用户登录并进入画布，不用扫码，也会沿用 MCP 的当前空间。链接 2 分钟内有效、只能用一次，等同登录凭证：**直接在浏览器里打开，不要贴到回复里，也不要写进文件或发给别人**。
+3. **在内置浏览器打开**：用 `preview_start` 打开链接（已有画布标签页就用 `navigate`）。
+4. **等画布就绪**：执行这一行，它会等到登录完成、画布加载好、协作连上，最多 40 秒：
 
    ```js
-   await new Promise((resolve) => {
-     const started = Date.now();
-     const t = setInterval(() => {
-       if (!location.hash.startsWith('#/login')) { clearInterval(t); resolve({ loggedIn: true, url: location.href }); }
-       else if (Date.now() - started > 40000) { clearInterval(t); resolve({ loggedIn: false }); }
-     }, 1000);
-   })
+   await window.__goticketAgent__.openCanvas({ projectId: '342' })
    ```
 
-4. 等接口就绪、协作连上、并且确实是目标画布：
-
-   ```js
-   const want = '342'; // 目标画布 ID
-   await new Promise((resolve) => {
-     const started = Date.now();
-     const tick = async () => {
-       const b = window.__canvasAgentBridge__;
-       try {
-         if (b && b.isReady()) {
-           const p = await b.exec({ action: 'ping' });
-           if (p.collaborationStatus === 'connected' && (!want || p.projectId === want)) return resolve(p);
-         }
-       } catch (e) {}
-       if (Date.now() - started > 30000) return resolve({ timeout: true, url: location.href });
-       setTimeout(tick, 500);
-     };
-     tick();
-   })
-   ```
-
-5. 换画布用 `switchProject`（`{ action: 'switchProject', projectId }`），再执行第 4 步。不要靠 `navigate` 到同一个地址，hash 地址相同时页面不会刷新。
+   - 返回 `ready: true` 就可以开始操作。
+   - `needLogin: true`：链接过期或已用过。重新调 `canvas_browser_link` 再打开；MCP 不可用时，先用 `tabs_context` 确认浏览器面板在显示，再请用户在面板里用微信扫码，然后再执行这一行。
+   - `timedOut: true`：再执行一次；还不行就看返回里的 `lastError`。
+5. **换画布**：已经在画布页时，同样执行 `openCanvas({ projectId: '新ID' })`，它会负责切换和等待。
 
 ## 2. 怎么调
 
