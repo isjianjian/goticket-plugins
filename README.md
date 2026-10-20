@@ -117,7 +117,7 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 
 装完重开一个会话，第一次用画布时会弹出「未来船票画布」的连接引导卡，点**连接**会打开授权页，用 mark-system 小程序扫码确认即可。连好的 MCP 统一出现在**「专家·技能·连接器」→ 连接器 → 自定义连接器**里，之后不会再重复引导。
 
-> 插件包通过 `plugin.json` 的 `dependencies.mcpServers` 声明依赖，`.mcp.json` 里用 `x-workbuddy.auth.type = "oauth"` 告诉客户端这是扫码授权——少了这两项，WorkBuddy 会装上插件但不会带出 MCP。
+> WorkBuddy 要同时看到两样东西才会加载 MCP：`plugin.json` 里**内联**的 `mcpServers`（`dependencies.mcpServers` 指向 `.mcp.json` 只用于依赖引导，桌面端不认它来启动 MCP），以及每个 server 下的 `x-workbuddy.auth.type = "oauth"`。少了任一项，插件能装上但 MCP 不会出现。
 
 用 CodeBuddy Code 命令行的话：
 
