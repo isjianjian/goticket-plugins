@@ -17,7 +17,7 @@
 | [Gemini CLI](#gemini-cli) | 扩展 | 是 | 按官方格式适配，待实测 |
 | [Antigravity](#antigravity) | 插件 | 是 | 按官方格式适配，待实测 |
 | [Kimi Code CLI](#kimi-code-cli) | 插件 | 是 | 按官方格式适配，待实测 |
-| [WorkBuddy（国际版、国内版）](#workbuddy) | 插件市场 | 是 | 国际版（WorkBuddy AI 5.8.4）已实测安装；专家形态的连接引导待实测 |
+| [WorkBuddy（国际版、国内版）](#workbuddy) | 导入专家包 | 是 | 国际版（WorkBuddy AI 5.8.4）已实测 |
 | [Trae（国际版、国内版）](#trae) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 | [Windsurf](#windsurf) | 手动添加 MCP + 技能命令 | 是 | 按官方格式适配，待实测 |
 
@@ -113,25 +113,26 @@ gemini extensions install https://github.com/isjianjian/goticket-plugins
 
 ### WorkBuddy
 
-国际版和国内版的插件格式相同。这个插件在 WorkBuddy 里以**专家**形态提供：装上之后在「专家·技能·连接器」里能直接找到「未来船票画布」，召唤它对话就行，不用自己配 MCP。
+WorkBuddy 里**不装插件，装专家**：专家会在第一次对话时自动弹出连接卡，点一下就扫码授权，不用自己配 MCP。国际版和国内版步骤相同。
 
-1. 打开「插件」页 →「添加市场」，填 `https://github.com/isjianjian/goticket-plugins`（也可以填 `isjianjian/goticket-plugins`），然后在市场里安装 `canvas`。
-2. 回到「专家·技能·连接器」→「专家」，找到「未来船票画布（画布协作助手）」，点进去开始对话。
-3. 第一次对话会弹出「未来船票画布」的连接引导卡，点**连接**打开授权页，用 mark-system 小程序扫码确认。
-4. 连好的 MCP 统一出现在**连接器 → 自定义连接器**里，之后不会再重复引导。
+1. 拿到专家包：`https://b.goticket.cn/plugins/canvas.zip`（国内快），或本仓库的 [`dist/canvas.zip`](https://github.com/isjianjian/goticket-plugins/raw/main/dist/canvas.zip)。
+2. 打开「专家·技能·连接器」→「我的专家」→「导入」，粘贴上面的链接；也可以先下载 zip，导入时选本地文件。
+3. 列表里会多出「未来船票画布」，点进去开始对话。
+4. 第一次对话会弹出「未来船票画布」的连接卡，点**连接**打开授权页，用 mark-system 小程序扫码确认。
+5. 连好的 MCP 统一出现在**连接器 → 自定义连接器**里，之后不会再重复引导。
 
-> 为什么做成专家形态：WorkBuddy 桌面端只对**专家会话**解析 MCP 依赖——它读专家清单里的 `mcpServers` 和每个 server 的 `x-workbuddy.auth.type = "oauth"`，据此弹出连接卡并走 OAuth。纯技能型插件（只有 `skills`、没有 `expertType`）能装上，但桌面端不会注册其中的 MCP，也不给授权入口。
+> 为什么不做成插件：WorkBuddy 桌面端只对**专家会话**解析 MCP 依赖（`ExpertDependencyRuntime` 读清单里的 `mcpServers` + 每个 server 的 `x-workbuddy.auth.type = "oauth"`）；而且专家中心只认 `experts` / `my-experts` 两个市场，第三方 git 市场装的插件即使写了 `expertType` 也不会出现在专家列表里。插件市场那条路仍能拿到技能，但不会带出 MCP。
 
-如果插件市场那条路在你的版本上没有把专家列出来，用**导入专家包**这条更直接的路：下载 [canvas.zip](https://github.com/isjianjian/goticket-plugins/raw/main/dist/canvas.zip)，在「专家·技能·连接器」→「我的专家」→ 导入（从本地文件选这个 zip），导入后召唤「未来船票画布」对话，一样会弹连接卡。`dist/canvas.zip` 就是本仓库打出来的专家包，改完内容后用 WorkBuddy 专家打包脚本（`package_expert.py`）重新打一次即可。
+`dist/canvas.zip` 是本仓库打出来的专家包，改完内容后用 WorkBuddy 的专家打包脚本（`package_expert.py`）重新打一次即可。更新也是重新导入覆盖。
 
-用 CodeBuddy Code 命令行的话：
+用 CodeBuddy Code 命令行的话（只装技能，MCP 需手动加）：
 
 ```bash
 codebuddy plugin marketplace add isjianjian/goticket-plugins
 codebuddy plugin install canvas@goticket
 ```
 
-国内网络访问 GitHub 不稳定时，可以只手动加 MCP：在 WorkBuddy 的 MCP 设置里添加：
+想手动加 MCP（例如只想在普通对话里用画布）：在 WorkBuddy 的 MCP 设置里添加：
 
 ```json
 {
@@ -220,7 +221,8 @@ Kimi Code CLI 在 `/plugins` 的已安装列表里更新或移除；WorkBuddy �
 
 ## 常见问题
 
-- **WorkBuddy 里插件装上了，但连接器里没有 `canvas_management`**：WorkBuddy 桌面端只对专家会话做 MCP 依赖引导，所以要用**专家**入口（「专家·技能·连接器」→「未来船票画布」）开始对话，才会弹连接卡。直接在普通对话里问画布是不会带出 MCP 的，可以按上面「手动加 MCP」兜底。
+- **WorkBuddy 里插件装上了，但连接器里没有 `canvas_management`**：WorkBuddy 桌面端只对专家会话做 MCP 依赖引导，而专家只能从「我的专家」来（导入 `canvas.zip`），第三方市场装的插件不会出现在专家列表里。按上面 WorkBuddy 那节的步骤导入专家包；只想在普通对话里用画布的话，按「手动加 MCP」兜底。
+- **WorkBuddy 点「连接」后授权页报 `invalid_client`**：客户端缓存的 OAuth 注册信息失效了。在「连接器 → 自定义连接器」里把这个连接器删掉再重新导入/连接，会重新注册。
 - **之前手动加过 `canvas_management`**：装插件前先删掉手动加的那个（例如 `claude mcp remove canvas_management`、`codex mcp remove canvas_management`），否则会看到两套相同的工具。
 - **扫码后仍显示未登录、提示 invalid_grant**：多个客户端同时用同一份授权时容易出现。关掉其他客户端，清除 `canvas_management` 的授权后，只用一个客户端重新扫码。详见 `login-help` 技能。
 - **Claude Desktop / claude.ai 网页版**：暂不支持。服务端还没有放行 Claude 网页的回调地址。
