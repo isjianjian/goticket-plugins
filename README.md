@@ -2,6 +2,8 @@
 
 **canvas（未来船票画布）**：连接画布管理 MCP（`https://gate.goticket.cn/api/mini/mcp`），以你自己的 mark-system 账号查项目和需求进度、提设计需求、生成图片。权限和前端完全一致。首次使用会打开授权页，用 **mark-system 小程序**扫码并在手机上确认。
 
+图文版安装和使用说明：**https://b.goticket.cn/plugins/**（可以直接把这个链接发给同事）。
+
 仓库里只有连接地址和使用说明，没有任何密钥。
 
 ## 支持的客户端
