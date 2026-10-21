@@ -13,6 +13,7 @@ skills:
   - progress
   - new-requirement
   - image
+  - live-edit
   - login-help
 ---
 

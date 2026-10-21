@@ -1,6 +1,6 @@
 {
   "name": "canvas",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "连接未来船票画布管理 MCP：查项目和需求进度、提设计需求、生成图片。首次使用用 mark-system 小程序扫码授权。",
   "mcpServers": {
     "canvas_management": {

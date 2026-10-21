@@ -1,6 +1,6 @@
 {
   "name": "canvas",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Operate the Goticket canvas through the canvas_management MCP: query project and requirement progress, submit design requests, quote and generate images, and edit the canvas live in the built-in browser.",
   "author": {
     "name": "未来船票",
